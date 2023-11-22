@@ -17,18 +17,10 @@ const dbConnection =  mysql.createConnection({
     if (err) {
       console.error('Error connecting to MySQL: ', err);
     } else {
-      console.log('Connected to MySQL database successfully!');
-    //   console.log('getting contacts table');
-    //     dbConnection.query('SELECT * FROM contact', (error, results, fields) => {
-    //         if (error) {
-    //         console.error('Error getting contact from database: ', error);
-    //         } else {
-    //         console.log('Contacts: ', results);
-    //         }
-    //     });
-        
+      console.log('Connected to MySQL database successfully!');   
     }
   });
+  
 // Create a contact in CRM or database
 app.post('/createContact', async (req, res) => {
     const { first_name, last_name, email, mobile_number, data_store } = req.body;
@@ -73,7 +65,7 @@ app.post('/createContact', async (req, res) => {
             console.error('Error creating contact in database: ', error);
             } else {
             console.log('Contact created in database: ', results);
-            return res.status(200).json({ message: 'Contact created in database' , data: results });
+            return res.status(200).json({ message: 'Contact created in database' , data: {contact_id: results.insertId} });
             }
         }
         );
