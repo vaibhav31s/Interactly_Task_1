@@ -2,15 +2,25 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
 const mysql = require('mysql');
+
+// Load variables from .env if present (Node >= 20.12)
+try { process.loadEnvFile(); } catch (e) { /* no .env file */ }
+
+const missingEnv = ['FRESHWORKS_API_KEY', 'FRESHWORKS_DOMAIN'].filter((k) => !process.env[k]);
+if (missingEnv.length) {
+    console.error(`Missing required environment variable(s): ${missingEnv.join(', ')} (see .env.example)`);
+    process.exit(1);
+}
+const FRESHWORKS_CONTACTS_URL = `https://${process.env.FRESHWORKS_DOMAIN}/crm/sales/api/contacts`;
 // import fetch from 'node-fetch';
 
 
 app.use(express.json());
 const dbConnection =  mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'password',
-    database: 'contact',
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'contact',
   });
   
   dbConnection.connect((err) => {
@@ -39,10 +49,10 @@ app.post('/createContact', async (req, res) => {
     };
 
     if (data_store === 'CRM') {
-        fetch('https://student-647385589481544619.myfreshworks.com/crm/sales/api/contacts', {
+        fetch(FRESHWORKS_CONTACTS_URL, {
             method: 'POST',
             headers: {
-                'Authorization': 'Token token=sWopdEVkadY--GECUCMEQg',
+                'Authorization': `Token token=${process.env.FRESHWORKS_API_KEY}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(contactData)
@@ -86,10 +96,10 @@ app.post('/getContact', async (req, res) => {
     }
 
     if (data_store === 'CRM') {
-        fetch(`https://student-647385589481544619.myfreshworks.com/crm/sales/api/contacts/${contact_id}`, {
+        fetch(`${FRESHWORKS_CONTACTS_URL}/${contact_id}`, {
             method: 'GET',
             headers: {
-                'Authorization': 'Token token=sWopdEVkadY--GECUCMEQg',
+                'Authorization': `Token token=${process.env.FRESHWORKS_API_KEY}`,
                 'Content-Type': 'application/json'
             }
         })
@@ -141,10 +151,10 @@ app.post('/updateContact', async (req, res) => {
     };
 
     if (data_store === 'CRM') {
-        fetch(`https://student-647385589481544619.myfreshworks.com/crm/sales/api/contacts/${contact_id}`, {
+        fetch(`${FRESHWORKS_CONTACTS_URL}/${contact_id}`, {
             method: 'PUT',
             headers: {
-                'Authorization': 'Token token=sWopdEVkadY--GECUCMEQg',
+                'Authorization': `Token token=${process.env.FRESHWORKS_API_KEY}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(contactData)
@@ -186,10 +196,10 @@ app.post('/deleteContact', async (req, res) => {
     }
 
     if (data_store === 'CRM') {
-        fetch(`https://student-647385589481544619.myfreshworks.com/crm/sales/api/contacts/${contact_id}`, {
+        fetch(`${FRESHWORKS_CONTACTS_URL}/${contact_id}`, {
             method: 'DELETE',
             headers: {
-                'Authorization': 'Token token=sWopdEVkadY--GECUCMEQg',
+                'Authorization': `Token token=${process.env.FRESHWORKS_API_KEY}`,
                 'Content-Type': 'application/json'
             }
         })
